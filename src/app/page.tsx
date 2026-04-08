@@ -2,24 +2,36 @@
 
 import Header from "@/components/Header";
 import HeroSection from "@/components/HeroSection";
-import GallerySection from "@/components/GallerySection";
+import WorksSection from "@/components/WorksSection";
 import AboutSection from "@/components/AboutSection";
 import ContactSection from "@/components/ContactSection";
 import Footer from "@/components/Footer";
-import ScrollProgress from "@/components/ScrollProgress";
 
-export default function Home() {
+export default function RetropopPage() {
   return (
-    <>
-      <ScrollProgress />
+    <div
+      className="retro-pop-template"
+      style={{
+        "--rp-bg": "#FFFDF0",
+        "--rp-surface": "#FFFFFF",
+        "--rp-text": "#1A1A2E",
+        "--rp-text-muted": "#7A7A8E",
+        "--rp-orange": "#FF6B35",
+        "--rp-teal": "#00B4D8",
+        "--rp-yellow": "#FFD166",
+        "--rp-pink": "#EF476F",
+        "--rp-border": "#1A1A2E",
+        backgroundColor: "#FFFDF0",
+      } as React.CSSProperties}
+    >
       <Header />
-      <main id="main-content">
+      <main>
         <HeroSection />
-        <GallerySection />
+        <WorksSection />
         <AboutSection />
         <ContactSection />
       </main>
       <Footer />
-    </>
+    </div>
   );
 }
