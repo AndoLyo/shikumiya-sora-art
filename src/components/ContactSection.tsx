@@ -1,86 +1,271 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Mail } from "lucide-react";
-import SectionHeading from "./SectionHeading";
-import { siteConfig } from "@/site.config";
+import { Mail, ExternalLink, Link2, ImageIcon } from "lucide-react";
+import { useSiteData } from "@/lib/SiteDataContext";
+import { buildSnsLinks } from "@/lib/site-data";
+
+const socialLinks = [
+  {
+    label: "X (Twitter)",
+    href: "#",
+    icon: Link2,
+    bg: "var(--rp-text)",
+    color: "#fff",
+  },
+  {
+    label: "Instagram",
+    href: "#",
+    icon: ImageIcon,
+    bg: "var(--rp-pink)",
+    color: "#fff",
+  },
+  {
+    label: "pixiv",
+    href: "#",
+    icon: ExternalLink,
+    bg: "var(--rp-teal)",
+    color: "#fff",
+  },
+];
+
+// Wavy SVG bottom edge
+function WavyBottom() {
+  return (
+    <svg
+      viewBox="0 0 1440 60"
+      className="block w-full"
+      preserveAspectRatio="none"
+      height="60"
+      aria-hidden="true"
+      style={{ fill: "var(--rp-text)" }}
+    >
+      <path d="M0,30 C120,55 240,5 360,30 C480,55 600,5 720,30 C840,55 960,5 1080,30 C1200,55 1320,5 1440,30 L1440,60 L0,60 Z" />
+    </svg>
+  );
+}
 
 export default function ContactSection() {
-  const { contact } = siteConfig;
+  const data = useSiteData();
+  const email = data?.email || "hello@example.com";
 
   return (
-    <section id="contact" className="relative section-padding overflow-hidden">
-      <div className="absolute inset-0 bg-[#0a0a0f]" />
+    <section
+      id="contact"
+      className="relative overflow-hidden"
+      style={{ backgroundColor: "var(--rp-yellow)" }}
+    >
+      {/* Color stripe top */}
+      <div className="w-full flex border-b-2" style={{ borderColor: "var(--rp-border)" }} aria-hidden="true">
+        {["var(--rp-orange)", "var(--rp-teal)", "var(--rp-pink)", "var(--rp-text)", "var(--rp-orange)", "var(--rp-teal)", "var(--rp-pink)", "var(--rp-text)"].map(
+          (c, i) => (
+            <div key={i} className="h-2 flex-1" style={{ backgroundColor: c }} />
+          )
+        )}
+      </div>
 
-      <div className="relative z-10 max-w-[700px] mx-auto px-6">
-        <SectionHeading
-          title={contact.title}
-          subtitle={contact.subtitle}
-          align="center"
-        />
+      <div className="py-20 px-5 sm:px-8">
+        <div className="mx-auto max-w-4xl">
+          {/* SAY HELLO big text */}
+          <motion.div
+            className="mb-12 text-center"
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-60px" }}
+            transition={{ duration: 0.6 }}
+          >
+            <p
+              className="mb-2 text-xs font-black uppercase tracking-widest"
+              style={{ color: "var(--rp-orange)" }}
+            >
+              ★ CONTACT
+            </p>
+            <h2
+              className="text-5xl font-black uppercase tracking-tighter md:text-7xl"
+              style={{
+                color: "var(--rp-text)",
+                WebkitTextStroke: "2px var(--rp-border)",
+              }}
+            >
+              SAY HELLO!
+            </h2>
+            <p
+              className="mt-4 text-sm font-bold"
+              style={{ color: "var(--rp-text-muted)" }}
+            >
+              お仕事のご依頼・コラボのご提案はいつでもどうぞ！
+            </p>
 
-        <motion.p
-          className="text-center text-text-secondary max-w-[500px] mx-auto mb-12 text-sm"
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.2 }}
-        >
-          {contact.description}
-        </motion.p>
+            {/* Envelope icon circle */}
+            <div className="mt-6 flex justify-center">
+              <div
+                className="w-16 h-16 border-2 flex items-center justify-center rotate-6"
+                style={{
+                  backgroundColor: "var(--rp-orange)",
+                  borderColor: "var(--rp-border)",
+                }}
+              >
+                <Mail className="h-8 w-8 text-white" />
+              </div>
+            </div>
+          </motion.div>
 
-        {/* Email */}
-        {contact.email && (
-          <motion.a
-            href={`mailto:${contact.email}`}
-            className="glow-border block mb-8"
+          {/* Form card */}
+          <motion.div
+            className="border-2 p-8 sm:p-10"
+            style={{
+              backgroundColor: "var(--rp-surface)",
+              borderColor: "var(--rp-border)",
+              boxShadow: "6px 6px 0px var(--rp-border)",
+            }}
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-60px" }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+          >
+            <form className="space-y-5" onSubmit={(e) => e.preventDefault()}>
+              <div className="grid gap-5 sm:grid-cols-2">
+                {/* Name */}
+                <div>
+                  <label
+                    className="mb-2 block text-xs font-black uppercase tracking-widest"
+                    style={{ color: "var(--rp-text-muted)" }}
+                  >
+                    お名前 <span style={{ color: "var(--rp-orange)" }}>*</span>
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="山田 太郎"
+                    className="w-full border-2 px-4 py-3 text-sm font-bold outline-none transition-all duration-200 focus:shadow-[3px_3px_0px_var(--rp-orange)]"
+                    style={{
+                      borderColor: "var(--rp-border)",
+                      backgroundColor: "var(--rp-bg)",
+                      color: "var(--rp-text)",
+                    }}
+                  />
+                </div>
+                {/* Email */}
+                <div>
+                  <label
+                    className="mb-2 block text-xs font-black uppercase tracking-widest"
+                    style={{ color: "var(--rp-text-muted)" }}
+                  >
+                    メールアドレス <span style={{ color: "var(--rp-orange)" }}>*</span>
+                  </label>
+                  <input
+                    type="email"
+                    placeholder="hello@example.com"
+                    className="w-full border-2 px-4 py-3 text-sm font-bold outline-none transition-all duration-200 focus:shadow-[3px_3px_0px_var(--rp-orange)]"
+                    style={{
+                      borderColor: "var(--rp-border)",
+                      backgroundColor: "var(--rp-bg)",
+                      color: "var(--rp-text)",
+                    }}
+                  />
+                </div>
+              </div>
+
+              {/* Subject */}
+              <div>
+                <label
+                  className="mb-2 block text-xs font-black uppercase tracking-widest"
+                  style={{ color: "var(--rp-text-muted)" }}
+                >
+                  件名
+                </label>
+                <input
+                  type="text"
+                  placeholder="イラスト制作のご依頼について"
+                  className="w-full border-2 px-4 py-3 text-sm font-bold outline-none transition-all duration-200 focus:shadow-[3px_3px_0px_var(--rp-orange)]"
+                  style={{
+                    borderColor: "var(--rp-border)",
+                    backgroundColor: "var(--rp-bg)",
+                    color: "var(--rp-text)",
+                  }}
+                />
+              </div>
+
+              {/* Message */}
+              <div>
+                <label
+                  className="mb-2 block text-xs font-black uppercase tracking-widest"
+                  style={{ color: "var(--rp-text-muted)" }}
+                >
+                  メッセージ <span style={{ color: "var(--rp-orange)" }}>*</span>
+                </label>
+                <textarea
+                  rows={5}
+                  placeholder="ご依頼内容・ご質問などをご記入ください"
+                  className="w-full resize-none border-2 px-4 py-3 text-sm font-bold outline-none transition-all duration-200 focus:shadow-[3px_3px_0px_var(--rp-orange)]"
+                  style={{
+                    borderColor: "var(--rp-border)",
+                    backgroundColor: "var(--rp-bg)",
+                    color: "var(--rp-text)",
+                  }}
+                />
+              </div>
+
+              {/* Submit */}
+              <motion.button
+                type="submit"
+                className="w-full py-4 text-sm font-black uppercase tracking-widest text-white border-2 transition-all duration-150"
+                style={{
+                  backgroundColor: "var(--rp-orange)",
+                  borderColor: "var(--rp-border)",
+                }}
+                whileHover={{
+                  y: -3,
+                  boxShadow: "5px 5px 0px var(--rp-border)",
+                }}
+                whileTap={{ y: 0, boxShadow: "none" }}
+              >
+                SEND MESSAGE →
+              </motion.button>
+            </form>
+          </motion.div>
+
+          {/* Social links */}
+          <motion.div
+            className="mt-12 text-center"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.4 }}
-            whileHover={{ y: -4 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
           >
-            <div className="relative rounded-2xl bg-[#0d0d15]/80 backdrop-blur-sm p-6 flex items-center gap-4 group">
-              <div className="w-12 h-12 rounded-lg bg-cyan-500/10 border border-white/[0.06] flex items-center justify-center">
-                <Mail className="w-5 h-5 text-cyan-400" strokeWidth={1.5} />
-              </div>
-              <div>
-                <h4 className="font-serif text-white font-semibold mb-1">
-                  {siteConfig.lang === "ja" ? "メールで問い合わせ" : "Get in Touch"}
-                </h4>
-                <p className="text-text-muted text-sm font-mono group-hover:text-primary transition-colors">
-                  {contact.email}
-                </p>
-              </div>
+            <p
+              className="mb-5 text-xs font-black uppercase tracking-widest"
+              style={{ color: "var(--rp-text)" }}
+            >
+              OR FIND ME ON
+            </p>
+            <div className="flex flex-wrap items-center justify-center gap-4">
+              {socialLinks.map(({ label, href, icon: Icon, bg, color }) => (
+                <motion.a
+                  key={label}
+                  href={href}
+                  className="flex items-center gap-2.5 px-6 py-3 text-sm font-black uppercase tracking-wide border-2"
+                  style={{
+                    backgroundColor: bg,
+                    color,
+                    borderColor: "var(--rp-border)",
+                  }}
+                  whileHover={{
+                    y: -3,
+                    boxShadow: "4px 4px 0px var(--rp-border)",
+                  }}
+                  whileTap={{ y: 0, boxShadow: "none" }}
+                >
+                  <Icon className="h-4 w-4" />
+                  {label}
+                </motion.a>
+              ))}
             </div>
-          </motion.a>
-        )}
-
-        {/* Social links */}
-        <motion.div
-          className="flex items-center justify-center gap-6 text-text-muted text-sm font-mono"
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.4 }}
-        >
-          {contact.social.map((s, i) => (
-            <span key={s.label} className="flex items-center gap-6">
-              {i > 0 && (
-                <span className="w-1 h-1 rounded-full bg-primary/30" />
-              )}
-              <a
-                href={s.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:text-primary transition-colors duration-300"
-              >
-                {s.label}
-              </a>
-            </span>
-          ))}
-        </motion.div>
+          </motion.div>
+        </div>
       </div>
+
+      {/* Wavy bottom into footer */}
+      <WavyBottom />
     </section>
   );
 }
