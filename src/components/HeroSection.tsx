@@ -1,166 +1,272 @@
 "use client";
 
-import { useRef, useMemo } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
-import Image from "next/image";
-import { siteConfig } from "@/site.config";
+import { motion } from "framer-motion";
+import { useSiteData } from "@/lib/SiteDataContext";
 
-const PARTICLE_COUNT = 30;
+// Scattered geometric shape data
+const shapes = [
+  { id: 1, type: "circle", size: 80, top: "10%", left: "3%", color: "var(--rp-yellow)", rotate: 0, delay: 0 },
+  { id: 2, type: "circle", size: 48, top: "20%", right: "5%", color: "var(--rp-teal)", rotate: 0, delay: 0.3 },
+  { id: 3, type: "square", size: 56, top: "55%", left: "2%", color: "var(--rp-pink)", rotate: 20, delay: 0.6 },
+  { id: 4, type: "circle", size: 36, bottom: "20%", right: "8%", color: "var(--rp-orange)", rotate: 0, delay: 0.2 },
+  { id: 5, type: "square", size: 40, top: "15%", left: "48%", color: "var(--rp-teal)", rotate: 45, delay: 0.9 },
+  { id: 6, type: "circle", size: 24, bottom: "35%", left: "20%", color: "var(--rp-pink)", rotate: 0, delay: 0.4 },
+  { id: 7, type: "square", size: 32, bottom: "12%", right: "25%", color: "var(--rp-yellow)", rotate: 15, delay: 0.7 },
+];
+
+// Star SVG for sparkles
+function Star({ size, color }: { size: number; color: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill={color} aria-hidden="true">
+      <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z" />
+    </svg>
+  );
+}
+
+// Zigzag SVG
+function Zigzag({ color }: { color: string }) {
+  return (
+    <svg width="120" height="20" viewBox="0 0 120 20" fill="none" aria-hidden="true">
+      <polyline
+        points="0,10 10,0 20,10 30,0 40,10 50,0 60,10 70,0 80,10 90,0 100,10 110,0 120,10"
+        stroke={color}
+        strokeWidth="3"
+        strokeLinecap="square"
+        fill="none"
+      />
+    </svg>
+  );
+}
 
 export default function HeroSection() {
-  const sectionRef = useRef<HTMLDivElement>(null);
-
-  const particles = useMemo(
-    () =>
-      Array.from({ length: PARTICLE_COUNT }, (_, i) => ({
-        id: i,
-        x: (i * 37 + 13) % 100,
-        y: (i * 53 + 7) % 100,
-        size: 1 + (i % 4),
-        duration: 8 + (i % 7) * 2,
-        delay: (i % 5) * 1.5,
-        isCyan: i % 4 !== 0,
-      })),
-    []
-  );
-
-  const { scrollYProgress } = useScroll({
-    target: sectionRef,
-    offset: ["start start", "end start"],
-  });
-
-  const imageY = useTransform(scrollYProgress, [0, 1], ["0%", "30%"]);
-  const imageScale = useTransform(scrollYProgress, [0, 1], [1, 1.1]);
-  const contentOpacity = useTransform(scrollYProgress, [0, 0.6], [1, 0]);
-
-  const { hero } = siteConfig;
+  const data = useSiteData();
+  const artistName = data?.artistName || "RETRO";
+  const subtitleText = data?.subtitle || "";
+  const catchcopyText = data?.catchcopy || "";
 
   return (
-    <section ref={sectionRef} id="hero" className="relative h-[160vh]">
-      <div className="sticky top-0 h-screen overflow-hidden">
-        {/* Background image with parallax */}
-        <motion.div className="absolute inset-0" style={{ y: imageY, scale: imageScale }}>
-          <Image
-            src={hero.backgroundImage}
-            alt="Hero background"
-            fill
-            className="object-cover object-[center_25%]"
-            priority
-            sizes="100vw"
-          />
-          <div className="absolute inset-0 bg-black/60" />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0f] via-[#0a0a0f]/30 to-transparent" />
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_40%,#0a0a0f_100%)]" />
-        </motion.div>
-
-        {/* Particles */}
-        <div className="absolute inset-0 z-[5] pointer-events-none overflow-hidden">
-          {particles.map((p) => (
-            <motion.div
-              key={p.id}
-              className="absolute rounded-full"
+    <section
+      className="relative overflow-hidden pt-36 pb-0 min-h-screen flex flex-col justify-center"
+      style={{ backgroundColor: "var(--rp-bg)" }}
+    >
+      {/* Scattered geometric shapes */}
+      {shapes.map((s) => (
+        <motion.div
+          key={s.id}
+          className="pointer-events-none absolute"
+          style={{
+            width: s.size,
+            height: s.size,
+            top: (s as { top?: string }).top,
+            left: (s as { left?: string }).left,
+            right: (s as { right?: string }).right,
+            bottom: (s as { bottom?: string }).bottom,
+            rotate: s.rotate,
+            opacity: 0.75,
+          }}
+          animate={{
+            y: s.id % 2 === 0 ? [-10, 10, -10] : [10, -10, 10],
+            rotate: [s.rotate, s.rotate + (s.id % 2 === 0 ? 8 : -8), s.rotate],
+          }}
+          transition={{
+            duration: 3 + s.delay,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: s.delay,
+          }}
+        >
+          {s.type === "circle" ? (
+            <div
+              className="w-full h-full rounded-full border-2"
               style={{
-                left: `${p.x}%`,
-                top: `${p.y}%`,
-                width: p.size,
-                height: p.size,
-                background: p.isCyan ? "rgba(0, 229, 255, 0.6)" : "rgba(212, 168, 83, 0.5)",
-                boxShadow: p.isCyan ? "0 0 8px rgba(0, 229, 255, 0.4)" : "0 0 8px rgba(212, 168, 83, 0.3)",
-              }}
-              animate={{
-                y: [0, -50, 0],
-                x: [0, p.id % 2 === 0 ? 20 : -20, 0],
-                opacity: [0.1, 0.9, 0.1],
-              }}
-              transition={{
-                duration: p.duration,
-                delay: p.delay,
-                repeat: Infinity,
-                ease: "easeInOut",
+                backgroundColor: s.color,
+                borderColor: "var(--rp-border)",
               }}
             />
-          ))}
-        </div>
+          ) : (
+            <div
+              className="w-full h-full border-2"
+              style={{
+                backgroundColor: s.color,
+                borderColor: "var(--rp-border)",
+              }}
+            />
+          )}
+        </motion.div>
+      ))}
 
-        {/* Content */}
+      {/* Stars / sparkles */}
+      <div className="pointer-events-none absolute top-[18%] left-[18%] opacity-80">
         <motion.div
-          className="relative z-20 h-full flex flex-col items-center justify-center px-6 text-center"
-          style={{ opacity: contentOpacity }}
+          animate={{ scale: [1, 1.3, 1], rotate: [0, 20, 0] }}
+          transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
         >
-          {/* Tag */}
-          <motion.div
-            className="inline-flex items-center gap-2 px-5 py-2 rounded-full border border-white/[0.08] bg-white/[0.03] backdrop-blur-sm mb-8"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-          >
-            <span className="w-1.5 h-1.5 rounded-full bg-primary" />
-            <span className="font-mono text-text-secondary text-[11px] tracking-[0.3em] uppercase">
-              {hero.tagline}
-            </span>
-          </motion.div>
+          <Star size={28} color="var(--rp-orange)" />
+        </motion.div>
+      </div>
+      <div className="pointer-events-none absolute bottom-[30%] right-[12%] opacity-70">
+        <motion.div
+          animate={{ scale: [1, 1.2, 1], rotate: [0, -15, 0] }}
+          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 0.6 }}
+        >
+          <Star size={20} color="var(--rp-teal)" />
+        </motion.div>
+      </div>
+      <div className="pointer-events-none absolute top-[45%] right-[22%] opacity-80">
+        <motion.div
+          animate={{ scale: [1, 1.4, 1] }}
+          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+        >
+          <Star size={16} color="var(--rp-pink)" />
+        </motion.div>
+      </div>
 
-          {/* Catchcopy */}
-          <motion.h1
-            className="font-serif text-white font-bold leading-tight tracking-wider"
-            style={{ fontSize: "clamp(2.5rem, 8vw, 6rem)" }}
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-          >
-            <span className="text-shimmer">{hero.catchcopy}</span>
-          </motion.h1>
-
-          {/* Subtitle */}
-          <motion.p
-            className="font-mono text-primary text-xs sm:text-sm tracking-[0.3em] uppercase mt-4 glow-text"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.7 }}
-          >
-            {hero.subtitle}
-          </motion.p>
-
-          {/* Decorative line */}
-          <motion.div
-            className="flex items-center gap-3 mt-8"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.9 }}
-          >
-            <div className="w-16 h-px bg-gradient-to-r from-transparent to-primary/40" />
-            <div className="w-2 h-2 rounded-full bg-primary/60" />
-            <div className="w-16 h-px bg-gradient-to-l from-transparent to-primary/40" />
-          </motion.div>
-
-          {/* Description */}
-          <motion.p
-            className="mt-8 max-w-[700px] text-text-secondary text-sm sm:text-base leading-relaxed"
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 1.1 }}
-          >
-            {hero.description}
-          </motion.p>
-
-          {/* CTA */}
-          <motion.div
-            className="mt-10"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 1.3 }}
-          >
-            <a
-              href={hero.cta.href}
-              className="px-8 py-3.5 rounded-xl bg-primary text-[#0a0a0f] font-bold font-mono text-xs tracking-widest uppercase hover:bg-primary/90 transition-all duration-300 hover:shadow-lg hover:shadow-primary/20"
-            >
-              {hero.cta.text}
-            </a>
-          </motion.div>
+      {/* Main content — deliberately asymmetric */}
+      <div className="relative z-10 mx-auto w-full max-w-7xl px-6 sm:px-10 pb-20">
+        {/* Zigzag accent */}
+        <motion.div
+          className="mb-6"
+          initial={{ opacity: 0, x: -30 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <Zigzag color="var(--rp-orange)" />
         </motion.div>
 
-        {/* Bottom fade */}
-        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#0a0a0f] to-transparent z-10" />
+        {/* Kicker badge */}
+        <motion.div
+          className="mb-5 inline-flex items-center gap-2 px-4 py-2 text-xs font-black uppercase tracking-widest border-2"
+          style={{
+            backgroundColor: "var(--rp-teal)",
+            borderColor: "var(--rp-border)",
+            color: "#fff",
+          }}
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.4, delay: 0.1 }}
+        >
+          {subtitleText || (!data ? "★ イラストレーター ＆ AIアーティスト ★" : `★ ${artistName} ★`)}
+        </motion.div>
+
+        {/* Big display heading */}
+        <motion.h1
+          className="font-black leading-none uppercase mb-4"
+          style={{ color: "var(--rp-text)" }}
+          initial={{ opacity: 0, y: 50 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, delay: 0.15, ease: "easeOut" }}
+        >
+          {data ? (
+            <span
+              className="block text-[clamp(3rem,10vw,9rem)] tracking-tighter"
+              style={{ transform: "rotate(-2deg)", display: "inline-block" }}
+            >
+              {artistName}
+            </span>
+          ) : (
+            <>
+              <span
+                className="block text-[clamp(3rem,10vw,9rem)] tracking-tighter"
+                style={{ transform: "rotate(-2deg)", display: "inline-block" }}
+              >
+                YUKI&apos;S
+              </span>
+              <span
+                className="block text-[clamp(3rem,10vw,9rem)] tracking-tighter relative"
+                style={{ transform: "rotate(1deg)", display: "inline-block" }}
+              >
+                <span
+                  className="relative z-10"
+                  style={{ color: "var(--rp-orange)", WebkitTextStroke: "3px var(--rp-border)" }}
+                >
+                  PORTFOLIO
+                </span>
+              </span>
+            </>
+          )}
+        </motion.h1>
+
+        {/* Sub text + colored block */}
+        <motion.div
+          className="mt-8 flex flex-col sm:flex-row items-start gap-6"
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.35, ease: "easeOut" }}
+        >
+          {/* Yellow block — stats */}
+          {(() => {
+            const displayStats = data
+              ? (data.stats && data.stats.length > 0
+                  ? data.stats.slice(0, 3).map((s) => { const p = s.split(":"); return `✦ ${p[0]}${p[1] ? " " + p[1] : ""}`; })
+                  : [])
+              : ["✦ 200+ WORKS", "✦ 5K FOLLOWERS", "✦ 3 YEARS EXP."];
+            return displayStats.length > 0 ? (
+              <div
+                className="shrink-0 px-5 py-4 border-2 rotate-1"
+                style={{ backgroundColor: "var(--rp-yellow)", borderColor: "var(--rp-border)" }}
+              >
+                {displayStats.map((line, i) => (
+                  <p
+                    key={i}
+                    className="text-sm font-black uppercase tracking-wider"
+                    style={{ color: "var(--rp-text)" }}
+                  >
+                    {line}
+                  </p>
+                ))}
+              </div>
+            ) : null;
+          })()}
+
+          <div>
+            <p
+              className="text-base leading-relaxed max-w-md font-medium"
+              style={{ color: "var(--rp-text-muted)" }}
+            >
+              {catchcopyText || (!data ? (<>大胆な色彩と遊び心あふれるスタイルで、
+              <br />
+              AIと手描きを融合した唯一無二の世界を表現。
+              <br />
+              90年代ポップカルチャーからインスパイアされた
+              <br />
+              エネルギッシュな作品を制作しています。</>) : "")}
+            </p>
+
+            {/* CTA row */}
+            <div className="mt-6 flex flex-wrap gap-4">
+              <a
+                href="#works"
+                className="inline-block px-7 py-3 text-sm font-black uppercase tracking-wider text-white border-2 transition-all duration-150 hover:-translate-y-1 hover:shadow-[4px_4px_0px_#1A1A2E] active:translate-y-0 active:shadow-none"
+                style={{
+                  backgroundColor: "var(--rp-orange)",
+                  borderColor: "var(--rp-border)",
+                }}
+              >
+                VIEW WORKS →
+              </a>
+              <a
+                href="#about"
+                className="inline-block px-7 py-3 text-sm font-black uppercase tracking-wider border-2 transition-all duration-150 hover:-translate-y-1 hover:shadow-[4px_4px_0px_#1A1A2E] active:translate-y-0 active:shadow-none"
+                style={{
+                  backgroundColor: "var(--rp-bg)",
+                  borderColor: "var(--rp-border)",
+                  color: "var(--rp-text)",
+                }}
+              >
+                ABOUT ME
+              </a>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+
+      {/* Bottom border stripe */}
+      <div className="w-full flex" aria-hidden="true">
+        {["var(--rp-orange)", "var(--rp-teal)", "var(--rp-yellow)", "var(--rp-pink)", "var(--rp-orange)", "var(--rp-teal)", "var(--rp-yellow)", "var(--rp-pink)"].map(
+          (c, i) => (
+            <div key={i} className="h-3 flex-1" style={{ backgroundColor: c }} />
+          )
+        )}
       </div>
     </section>
   );
